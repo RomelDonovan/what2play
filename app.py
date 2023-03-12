@@ -2,94 +2,94 @@ from flask import Flask, render_template
 import requests
 import json
 import random
-from config import API, ID
+import time
+from config import API_URL, DETAILS_URL, GAME_LIMIT, STEAM_LINK, GAME_REVIEW
 
 app = Flask(__name__)
 
 def retrieve_data():
-    resp = requests.get(API)
-    data = json.loads(resp.text)
-    return data
-
-
-def parse_data(data):
-    info = data["applist"]["apps"]
-    random.shuffle(info)
-    games = info[:49]
-
-    game_ids = []
-    for id in games:
-        game_ids.append(id["appid"])
-    return game_ids
-
-def get_data(appids):
-    game_info = []
-    
-    for id in appids:
-        resp = requests.get(f"https://store.steampowered.com/api/appdetails?appids={id}")
-        urls = f"https://store.steampowered.com/app/{id}"
+    try:
+        resp = requests.get(API_URL)
         data = json.loads(resp.text)
+        return data
+    except Exception as e:
+        print(f"Unable to retrieve data from API. Exception: {e}")
+        
+# def parse_data(data):
+#     game_info = data["applist"]["apps"]
+#     random.shuffle(game_info)
+#     games = game_info[:49]
 
-        if data[str(id)]["success"] == False:
+#     return games
+
+    # game_ids = []
+    # for game in games:
+    #     game_ids.append(game["appid"])
+    # return game_ids
+
+def get_data(game_data):
+    games = []
+    game_info = game_data["applist"]["apps"]
+    random.shuffle(game_info)
+
+    for data in game_info:
+        id = data["appid"]
+        resp = requests.get(DETAILS_URL.format(id))
+        game_details = json.loads(resp.text)
+        steam_url = STEAM_LINK.format(id)
+        game = game_details[str(id)]
+        
+
+        if game["success"] == False:
+            time.sleep(5)
             continue
 
-        elif data[str(id)]["data"]["type"] == "game":
-            names = data[str(id)]["data"]["name"]
-            imgs = data[str(id)]["data"]["header_image"]
-            details = data[str(id)]["data"]["short_description"]
-            ids = str(id)
+        elif game["data"]["type"] == "game":
+            name = game["data"]["name"]
+            img = game["data"]["header_image"]
+            detail = game["data"]["short_description"]
+            review = get_review(id)
+            games.append({"name":name, "img":img, "detail":detail, "url":steam_url, "id":str(id), "review":review})
+            if len(games) == GAME_LIMIT:
+                break
+        
+    return games
 
-            # names = names[:29]
-            # details = details[:29]
-            # imgs = imgs[:29]
+def get_review(appid):
 
-            game_info.append({"name":names,"img":imgs,"detail":details,"url":urls,"id":ids})
-
-        else:
-            pass
-
-    return game_info
-
-def review_rate(appid):
-    review_data = []
-    rating = []
-
-    for id in appid:
-        url= requests.get(f"https://store.steampowered.com/appreviews/{id}?json=1")
+    # for id in appid:
+        url= requests.get(GAME_REVIEW.format(appid))
         data = json.loads(url.text)
-        review_data.append(data)
+        # review_data.append(data)
         pos = data["query_summary"]["total_positive"] 
-        neg = data["query_summary"]["total_negative"]
+        # neg = data["query_summary"]["total_negative"]
         total = data["query_summary"]["total_reviews"]
 
-        rate = pos == 0 or pos / total * 100
-
-        if rate == True:
-            rating.append("Unrated")
-
-        elif rate >= 1 and rate <= 19:
-            rating.append("1")
-
-        elif rate >= 20 and rate <= 44:
-            rating.append("2")
-
-        elif rate >= 45 and rate <= 64:
-            rating.append("3")
+        if not pos or not total:
+            return None
         
-        elif rate >= 65 and rate <= 84:
-            rating.append("4")
-        elif rate >= 85 and rate <= 100:
-            rating.append("5")
+        rating = round(pos / total * 100)
 
-    return rating
+        if rating >= 1 and rating <= 19:
+            stars = 1
+        elif rating >= 20 and rating <= 44:
+            stars = 2
+        elif rating >= 45 and rating <= 64:
+            stars = 3
+        elif rating >= 65 and rating <= 84:
+            stars = 4
+        elif rating >= 85 and rating <= 100:
+            stars = 5
+
+        return stars
 
 @app.route("/")
 def index():
     data = retrieve_data()
-    appids = parse_data(data)
-    get_data(appids)
-    review_rate(appids)
-    return render_template("app.html", data=zip(get_data(appids),review_rate(appids)))
+    # game_data = parse_data(data)
+    games = get_data(data)
+    # review_rate(data)
+    return render_template("app.html", games=games)
 
 @app.errorhandler(404)
 def page_not_found(e):
