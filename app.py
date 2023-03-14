@@ -3,6 +3,7 @@ import requests
 import json
 import random
 import time
+import pickle
 from config import API_URL, DETAILS_URL, GAME_LIMIT, STEAM_LINK, GAME_REVIEW
 
 app = Flask(__name__)
@@ -14,18 +15,6 @@ def retrieve_data():
         return data
     except Exception as e:
         print(f"Unable to retrieve data from API. Exception: {e}")
-        
-# def parse_data(data):
-#     game_info = data["applist"]["apps"]
-#     random.shuffle(game_info)
-#     games = game_info[:49]
-
-#     return games
-
-    # game_ids = []
-    # for game in games:
-    #     game_ids.append(game["appid"])
-    # return game_ids
 
 def get_data(game_data):
     games = []
@@ -56,39 +45,34 @@ def get_data(game_data):
     return games
 
 def get_review(appid):
+    url= requests.get(GAME_REVIEW.format(appid))
+    data = json.loads(url.text)
+    pos = data["query_summary"]["total_positive"] 
+    total = data["query_summary"]["total_reviews"]
 
-    # for id in appid:
-        url= requests.get(GAME_REVIEW.format(appid))
-        data = json.loads(url.text)
-        # review_data.append(data)
-        pos = data["query_summary"]["total_positive"] 
-        # neg = data["query_summary"]["total_negative"]
-        total = data["query_summary"]["total_reviews"]
-
-        if not pos or not total:
-            return None
+    if not pos or not total:
+        return None
         
-        rating = round(pos / total * 100)
+    rating = round(pos / total * 100)
 
-        if rating >= 1 and rating <= 19:
-            stars = 1
-        elif rating >= 20 and rating <= 44:
-            stars = 2
-        elif rating >= 45 and rating <= 64:
-            stars = 3
-        elif rating >= 65 and rating <= 84:
-            stars = 4
-        elif rating >= 85 and rating <= 100:
+    if rating >= 1 and rating <= 19:
+        stars = 1
+    elif rating >= 20 and rating <= 44:
+        stars = 2
+    elif rating >= 45 and rating <= 64:
+        stars = 3
+    elif rating >= 65 and rating <= 84:
+        stars = 4
+    elif rating >= 85 and rating <= 100:
             stars = 5
 
-        return stars
+    return stars
 
 @app.route("/")
 def index():
     data = retrieve_data()
-    # game_data = parse_data(data)
     games = get_data(data)
-    # review_rate(data)
+    # games = pickle.load(open("games.pickle", "rb"))
     return render_template("app.html", games=games)
 
 @app.errorhandler(404)
