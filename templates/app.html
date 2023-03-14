@@ -14,8 +14,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <title>What2Play</title>
-    <style>
 
+<style>
 body {
   background-color: #000000;
 }
@@ -35,6 +35,8 @@ body {
   flex-wrap: wrap;
   justify-content: space-between;
   position: relative;
+  margin-top: 30px;
+  margin-bottom: 30px;
   gap: 10px;
 }
 
@@ -52,7 +54,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100%;
+  height: 90%;
   width: 100%;
   opacity: 0;
   transition: .5s ease;
@@ -90,10 +92,10 @@ a {
   color: white;
 }
 
-  </style>
+</style>
 </head>
 
-    {% block content %}
+  {% block content %}
     <div class="jumbotron text-bg-dark">
       <img src="https://mario.wiki.gallery/images/3/30/QuestionBlock_-_2D_art.svg" alt="" width="50" height="50"> What2Play
       <img src="https://mario.wiki.gallery/images/3/30/QuestionBlock_-_2D_art.svg" alt=""width="50" height="50">
@@ -101,61 +103,35 @@ a {
 
       <div class="container">
         {% for items in games %}
-        <div class="data-container">
-          <a href="{{ items['url'] }}">
-          <img src="{{ items['img'] }}" alt="" class="image" width="350" height="150">
-          <div class="overlay">
-            <div class="text">{{ items["detail"] }}</div>
-          </div>
+          <div class="data-container">
+            <a href="{{ items['url'] }}">
+            <img src="{{ items['img'] }}" alt="" class="image" width="350" height="150">
+              <div class="overlay">
+                <div class="text">{{ items["detail"] }}</div>
+              </div>
+            </a>  
           <div class="title-stars">
-          <span>{{ items["name"] }}</span></a>
-
+            <a href="{{ items['url'] }}">
+            <span>{{ items["name"] }}</span>
+            </a>
           <span class="star-rating">
-            {% if items["review"] == 1 %}
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star"></span>
-            <span class="fa fa-star"></span>
-            <span class="fa fa-star"></span>
-            <span class="fa fa-star"></span>
-
-            {% elif items["review"] == 2 %}
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star"></span>
-            <span class="fa fa-star"></span>
-            <span class="fa fa-star"></span>
-
-            {% elif items["review"] == 3 %}
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star"></span>
-            <span class="fa fa-star"></span>
-
-            {% elif items["review"] == 4 %}
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star"></span>
-
-            {% elif items["review"] == 5 %}
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-            <span class="fa fa-star checked"></span>
-
-            {% elif items["review"] == None %}
-            <span style="color: yellow;">Unrated</span>
-          </span>
-
+            {% if items["review"] is none %}
+              <span style="color: yellow;">Unrated</span>
+            {% else %}
+              {% for i in range(1,6) %}
+                {% if items["review"] >= i %}
+                  <span class="fa fa-star checked"></span>
+                {% else %}
+                  <span class="fa fa-star"></span>
+                {% endif %}
+              {% endfor %}
             {% endif %}
-        </div>
+          </span>
+          </div>
+          </div>
+        {% endfor %}
       </div>
-          {% endfor %}
-      </div>
-    {% endblock %}
+  {% endblock %}
 
 </body>
 </html>
