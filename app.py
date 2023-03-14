@@ -3,7 +3,6 @@ import requests
 import json
 import random
 import time
-import pickle
 from config import API_URL, DETAILS_URL, GAME_LIMIT, STEAM_LINK, GAME_REVIEW
 
 app = Flask(__name__)
@@ -40,6 +39,7 @@ def get_data(game_data):
             review = get_review(id)
             games.append({"name":name, "img":img, "detail":detail, "url":steam_url, "id":str(id), "review":review})
             if len(games) == GAME_LIMIT:
+                
                 break
         
     return games
@@ -72,7 +72,6 @@ def get_review(appid):
 def index():
     data = retrieve_data()
     games = get_data(data)
-    # games = pickle.load(open("games.pickle", "rb"))
     return render_template("app.html", games=games)
 
 @app.errorhandler(404)

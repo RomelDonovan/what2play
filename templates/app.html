@@ -100,37 +100,36 @@ a {
       <img src="https://mario.wiki.gallery/images/3/30/QuestionBlock_-_2D_art.svg" alt="" width="50" height="50"> What2Play
       <img src="https://mario.wiki.gallery/images/3/30/QuestionBlock_-_2D_art.svg" alt=""width="50" height="50">
     </div>
-
-      <div class="container">
-        {% for items in games %}
-          <div class="data-container">
-            <a href="{{ items['url'] }}">
+    <div class="container">
+      {% for items in games %}
+        <div class="data-container">
+          <a href="{{ items['url'] }}">
             <img src="{{ items['img'] }}" alt="" class="image" width="350" height="150">
-              <div class="overlay">
-                <div class="text">{{ items["detail"] }}</div>
-              </div>
-            </a>  
+            <div class="overlay">
+              <div class="text">{{ items["detail"] }}</div>
+            </div>
+          </a>  
           <div class="title-stars">
             <a href="{{ items['url'] }}">
-            <span>{{ items["name"] }}</span>
+              <span>{{ items["name"] }}</span>
             </a>
-          <span class="star-rating">
-            {% if items["review"] is none %}
-              <span style="color: yellow;">Unrated</span>
-            {% else %}
-              {% for i in range(1,6) %}
-                {% if items["review"] >= i %}
-                  <span class="fa fa-star checked"></span>
-                {% else %}
-                  <span class="fa fa-star"></span>
-                {% endif %}
-              {% endfor %}
-            {% endif %}
-          </span>
+            <span class="star-rating">
+              {% if items["review"] is none %}
+                <span style="color: yellow;">Unrated</span>
+              {% else %}
+                {% for i in range(1,6) %}
+                  {% if items["review"] >= i %}
+                    <span class="fa fa-star checked"></span>
+                  {% else %}
+                    <span class="fa fa-star"></span>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            </span>
           </div>
-          </div>
-        {% endfor %}
-      </div>
+        </div>
+      {% endfor %}
+    </div>
   {% endblock %}
 
 </body>
